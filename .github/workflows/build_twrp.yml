@@ -10,7 +10,7 @@ jobs:
       - name: 1. Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: false
+          tool-cache: true
           android: true
           dotnet: true
           haskell: true
@@ -18,11 +18,11 @@ jobs:
           docker-images: true
           swap-storage: false
 
-      - name: 2. Setup 32GB swap and install build dependencies
+      - name: 2. Setup 24GB swap and install build dependencies
         run: |
           sudo swapoff -a || true
           sudo rm -f /mnt/swapfile /swapfile
-          sudo fallocate -l 32G /swapfile
+          sudo fallocate -l 24G /swapfile
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile
@@ -43,6 +43,8 @@ jobs:
           git config --global user.email "builder@example.com"
           repo init --depth=1 -u https://github.com/TWRP-Test/platform_manifest_twrp_aosp.git -b twrp-16.0
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+          rm -rf ~/twrp/.repo
+          df -h
 
       - name: 4. Checkout device tree
         uses: actions/checkout@v4
@@ -59,7 +61,7 @@ jobs:
           export GOGC=50
           source build/envsetup.sh
           lunch twrp_gauguin-bp2a-eng
-          mka -j2 recoveryimage
+          mka -j3 recoveryimage
 
       - name: 6. Upload recovery.img artifact
         uses: actions/upload-artifact@v4

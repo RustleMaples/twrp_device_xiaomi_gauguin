@@ -1,0 +1,58 @@
+name: Build TWRP 16 for gauguin
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 1. Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: 2. Install build dependencies and repo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git aria2 rsync curl zip unzip python-is-python3 cpio \
+            bison build-essential flex libncurses5-dev libssl-dev libxml2-utils xz-utils \
+            lz4 zstd bc
+          sudo curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo -o /usr/local/bin/repo
+          sudo chmod a+x /usr/local/bin/repo
+
+      - name: 3. Sync TWRP-Test 16.0 manifest
+        run: |
+          mkdir -p ~/twrp && cd ~/twrp
+          git config --global user.name "Builder"
+          git config --global user.email "builder@example.com"
+          repo init --depth=1 -u https://github.com/TWRP-Test/platform_manifest_twrp_aosp.git -b twrp-16.0
+          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+      - name: 4. Checkout device tree
+        uses: actions/checkout@v4
+        with:
+          path: device_tree
+
+      - name: 5. Build recoveryimage
+        run: |
+          mkdir -p ~/twrp/device/xiaomi
+          cp -r "$GITHUB_WORKSPACE/device_tree" ~/twrp/device/xiaomi/gauguin
+          cd ~/twrp
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export LC_ALL="C"
+          source build/envsetup.sh
+          lunch twrp_gauguin-bp2a-eng
+          mka recoveryimage
+
+      - name: 6. Upload recovery.img artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TWRP-16-gauguin
+          path: ~/twrp/out/target/product/gauguin/recovery.img

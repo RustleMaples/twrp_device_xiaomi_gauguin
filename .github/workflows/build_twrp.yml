@@ -18,14 +18,15 @@ jobs:
           docker-images: true
           swap-storage: false
 
-      - name: 2. Setup 12GB swap and install build dependencies
+      - name: 2. Setup 32GB swap and install build dependencies
         run: |
           sudo swapoff -a || true
           sudo rm -f /mnt/swapfile /swapfile
-          sudo fallocate -l 12G /swapfile
+          sudo fallocate -l 32G /swapfile
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile
+          sudo sysctl -w vm.swappiness=80
           free -h
           df -h
           sudo apt-get update

@@ -16,10 +16,18 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap-storage: true
+          swap-storage: false
 
-      - name: 2. Install build dependencies and repo
+      - name: 2. Setup 12GB swap and install build dependencies
         run: |
+          sudo swapoff -a || true
+          sudo rm -f /mnt/swapfile /swapfile
+          sudo fallocate -l 12G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+          df -h
           sudo apt-get update
           sudo apt-get install -y git aria2 rsync curl zip unzip python-is-python3 cpio \
             bison build-essential flex libncurses5-dev libssl-dev libxml2-utils xz-utils \
@@ -47,9 +55,10 @@ jobs:
           cd ~/twrp
           export ALLOW_MISSING_DEPENDENCIES=true
           export LC_ALL="C"
+          export GOGC=50
           source build/envsetup.sh
           lunch twrp_gauguin-bp2a-eng
-          mka recoveryimage
+          mka -j2 recoveryimage
 
       - name: 6. Upload recovery.img artifact
         uses: actions/upload-artifact@v4

@@ -181,6 +181,7 @@ TW_NO_HAPTICS := true
 TW_NO_SCREEN_BLANK := true
 TW_INCLUDE_REPACKTOOLS := true
 TW_INCLUDE_RESETPROP := true
+TW_USE_DMCTL := true
 
 # Patchlevel handling is split in two: the super-version block above covers
 # keystore2 (early read at `on late-init`), while recovery/root/system/bin/

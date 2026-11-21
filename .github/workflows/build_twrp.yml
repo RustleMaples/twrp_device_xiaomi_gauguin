@@ -81,6 +81,7 @@ jobs:
         run: |
           TAG="twrp-erofs-${{ github.run_number }}-${GITHUB_SHA::7}"
           gh release create "$TAG" ~/twrp/out/target/product/gauguin/recovery.img \
+            --repo "${{ github.repository }}" \
             --title "TWRP 16 Universal EXT4+EROFS ($TAG)" \
             --notes "Built with clean 4.19.325 EROFS Image-twrp (non-KSU/KPM) and AVB signed." \
             --latest

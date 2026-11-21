@@ -18,8 +18,11 @@ PRODUCT_PACKAGES += \
 # keystore2 needs libsqlite.so; TWRP's static ld.config only searches
 # /system/lib64, so build our own (matching tree's ICU) instead of
 # borrowing the ROM's (ICU symbol mismatch).
+# Also build AOSP 16's native recovery AIDL health service so battery status
+# works without ABI mismatch against PixelOS 17's health-service.qti blob.
 PRODUCT_PACKAGES += \
-    libsqlite
+    libsqlite \
+    android.hardware.health-service.example_recovery
 
 # ro.debuggable=1 ensures post_process_props.py appends "adb" instead of "none"
 # to every partition prop file, so adbd starts at boot.
